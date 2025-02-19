@@ -298,6 +298,12 @@ class SetupIntentService(StripeService):
         """
         If this is a `p24` PaymentMethod, this hash contains details about the P24 payment method.
         """
+        pay_by_bank: NotRequired[
+            "SetupIntentService.ConfirmParamsPaymentMethodDataPayByBank"
+        ]
+        """
+        If this is a `pay_by_bank` PaymentMethod, this hash contains details about the PayByBank payment method.
+        """
         payco: NotRequired[
             "SetupIntentService.ConfirmParamsPaymentMethodDataPayco"
         ]
@@ -399,6 +405,7 @@ class SetupIntentService(StripeService):
             "naver_pay",
             "oxxo",
             "p24",
+            "pay_by_bank",
             "payco",
             "paynow",
             "paypal",
@@ -737,6 +744,9 @@ class SetupIntentService(StripeService):
         The customer's bank.
         """
 
+    class ConfirmParamsPaymentMethodDataPayByBank(TypedDict):
+        pass
+
     class ConfirmParamsPaymentMethodDataPayco(TypedDict):
         pass
 
@@ -922,7 +932,10 @@ class SetupIntentService(StripeService):
         """
 
     class ConfirmParamsPaymentMethodOptionsBacsDebitMandateOptions(TypedDict):
-        pass
+        reference_prefix: NotRequired["Literal['']|str"]
+        """
+        Prefix used to generate the Mandate reference. Must be at most 12 characters long. Must consist of only uppercase letters, numbers, spaces, or the following special characters: '/', '_', '-', '&', '.'. Cannot begin with 'DDIC' or 'STRIPE'.
+        """
 
     class ConfirmParamsPaymentMethodOptionsCard(TypedDict):
         mandate_options: NotRequired[
@@ -947,6 +960,7 @@ class SetupIntentService(StripeService):
                 "girocard",
                 "interac",
                 "jcb",
+                "link",
                 "mastercard",
                 "unionpay",
                 "unknown",
@@ -1112,7 +1126,10 @@ class SetupIntentService(StripeService):
         """
 
     class ConfirmParamsPaymentMethodOptionsSepaDebitMandateOptions(TypedDict):
-        pass
+        reference_prefix: NotRequired["Literal['']|str"]
+        """
+        Prefix used to generate the Mandate reference. Must be at most 12 characters long. Must consist of only uppercase letters, numbers, spaces, or the following special characters: '/', '_', '-', '&', '.'. Cannot begin with 'STRIPE'.
+        """
 
     class ConfirmParamsPaymentMethodOptionsUsBankAccount(TypedDict):
         financial_connections: NotRequired[
@@ -1257,7 +1274,7 @@ class SetupIntentService(StripeService):
         """
         payment_method_configuration: NotRequired[str]
         """
-        The ID of the payment method configuration to use with this SetupIntent.
+        The ID of the [payment method configuration](https://stripe.com/docs/api/payment_method_configurations) to use with this SetupIntent.
         """
         payment_method_data: NotRequired[
             "SetupIntentService.CreateParamsPaymentMethodData"
@@ -1274,7 +1291,7 @@ class SetupIntentService(StripeService):
         """
         payment_method_types: NotRequired[List[str]]
         """
-        The list of payment method types (for example, card) that this SetupIntent can use. If you don't provide this, it defaults to ["card"].
+        The list of payment method types (for example, card) that this SetupIntent can use. If you don't provide this, Stripe will dynamically show relevant payment methods from your [payment method settings](https://dashboard.stripe.com/settings/payment_methods).
         """
         return_url: NotRequired[str]
         """
@@ -1533,6 +1550,12 @@ class SetupIntentService(StripeService):
         """
         If this is a `p24` PaymentMethod, this hash contains details about the P24 payment method.
         """
+        pay_by_bank: NotRequired[
+            "SetupIntentService.CreateParamsPaymentMethodDataPayByBank"
+        ]
+        """
+        If this is a `pay_by_bank` PaymentMethod, this hash contains details about the PayByBank payment method.
+        """
         payco: NotRequired[
             "SetupIntentService.CreateParamsPaymentMethodDataPayco"
         ]
@@ -1632,6 +1655,7 @@ class SetupIntentService(StripeService):
             "naver_pay",
             "oxxo",
             "p24",
+            "pay_by_bank",
             "payco",
             "paynow",
             "paypal",
@@ -1968,6 +1992,9 @@ class SetupIntentService(StripeService):
         The customer's bank.
         """
 
+    class CreateParamsPaymentMethodDataPayByBank(TypedDict):
+        pass
+
     class CreateParamsPaymentMethodDataPayco(TypedDict):
         pass
 
@@ -2153,7 +2180,10 @@ class SetupIntentService(StripeService):
         """
 
     class CreateParamsPaymentMethodOptionsBacsDebitMandateOptions(TypedDict):
-        pass
+        reference_prefix: NotRequired["Literal['']|str"]
+        """
+        Prefix used to generate the Mandate reference. Must be at most 12 characters long. Must consist of only uppercase letters, numbers, spaces, or the following special characters: '/', '_', '-', '&', '.'. Cannot begin with 'DDIC' or 'STRIPE'.
+        """
 
     class CreateParamsPaymentMethodOptionsCard(TypedDict):
         mandate_options: NotRequired[
@@ -2178,6 +2208,7 @@ class SetupIntentService(StripeService):
                 "girocard",
                 "interac",
                 "jcb",
+                "link",
                 "mastercard",
                 "unionpay",
                 "unknown",
@@ -2343,7 +2374,10 @@ class SetupIntentService(StripeService):
         """
 
     class CreateParamsPaymentMethodOptionsSepaDebitMandateOptions(TypedDict):
-        pass
+        reference_prefix: NotRequired["Literal['']|str"]
+        """
+        Prefix used to generate the Mandate reference. Must be at most 12 characters long. Must consist of only uppercase letters, numbers, spaces, or the following special characters: '/', '_', '-', '&', '.'. Cannot begin with 'STRIPE'.
+        """
 
     class CreateParamsPaymentMethodOptionsUsBankAccount(TypedDict):
         financial_connections: NotRequired[
@@ -2536,7 +2570,7 @@ class SetupIntentService(StripeService):
         """
         payment_method_configuration: NotRequired[str]
         """
-        The ID of the payment method configuration to use with this SetupIntent.
+        The ID of the [payment method configuration](https://stripe.com/docs/api/payment_method_configurations) to use with this SetupIntent.
         """
         payment_method_data: NotRequired[
             "SetupIntentService.UpdateParamsPaymentMethodData"
@@ -2553,7 +2587,7 @@ class SetupIntentService(StripeService):
         """
         payment_method_types: NotRequired[List[str]]
         """
-        The list of payment method types (for example, card) that this SetupIntent can set up. If you don't provide this array, it defaults to ["card"].
+        The list of payment method types (for example, card) that this SetupIntent can set up. If you don't provide this, Stripe will dynamically show relevant payment methods from your [payment method settings](https://dashboard.stripe.com/settings/payment_methods).
         """
 
     class UpdateParamsPaymentMethodData(TypedDict):
@@ -2741,6 +2775,12 @@ class SetupIntentService(StripeService):
         """
         If this is a `p24` PaymentMethod, this hash contains details about the P24 payment method.
         """
+        pay_by_bank: NotRequired[
+            "SetupIntentService.UpdateParamsPaymentMethodDataPayByBank"
+        ]
+        """
+        If this is a `pay_by_bank` PaymentMethod, this hash contains details about the PayByBank payment method.
+        """
         payco: NotRequired[
             "SetupIntentService.UpdateParamsPaymentMethodDataPayco"
         ]
@@ -2840,6 +2880,7 @@ class SetupIntentService(StripeService):
             "naver_pay",
             "oxxo",
             "p24",
+            "pay_by_bank",
             "payco",
             "paynow",
             "paypal",
@@ -3176,6 +3217,9 @@ class SetupIntentService(StripeService):
         The customer's bank.
         """
 
+    class UpdateParamsPaymentMethodDataPayByBank(TypedDict):
+        pass
+
     class UpdateParamsPaymentMethodDataPayco(TypedDict):
         pass
 
@@ -3361,7 +3405,10 @@ class SetupIntentService(StripeService):
         """
 
     class UpdateParamsPaymentMethodOptionsBacsDebitMandateOptions(TypedDict):
-        pass
+        reference_prefix: NotRequired["Literal['']|str"]
+        """
+        Prefix used to generate the Mandate reference. Must be at most 12 characters long. Must consist of only uppercase letters, numbers, spaces, or the following special characters: '/', '_', '-', '&', '.'. Cannot begin with 'DDIC' or 'STRIPE'.
+        """
 
     class UpdateParamsPaymentMethodOptionsCard(TypedDict):
         mandate_options: NotRequired[
@@ -3386,6 +3433,7 @@ class SetupIntentService(StripeService):
                 "girocard",
                 "interac",
                 "jcb",
+                "link",
                 "mastercard",
                 "unionpay",
                 "unknown",
@@ -3551,7 +3599,10 @@ class SetupIntentService(StripeService):
         """
 
     class UpdateParamsPaymentMethodOptionsSepaDebitMandateOptions(TypedDict):
-        pass
+        reference_prefix: NotRequired["Literal['']|str"]
+        """
+        Prefix used to generate the Mandate reference. Must be at most 12 characters long. Must consist of only uppercase letters, numbers, spaces, or the following special characters: '/', '_', '-', '&', '.'. Cannot begin with 'STRIPE'.
+        """
 
     class UpdateParamsPaymentMethodOptionsUsBankAccount(TypedDict):
         financial_connections: NotRequired[

@@ -285,7 +285,7 @@ class ConfirmationToken(APIResource["ConfirmationToken"]):
                         """
                         brand: Optional[str]
                         """
-                        Card brand. Can be `amex`, `diners`, `discover`, `eftpos_au`, `jcb`, `mastercard`, `unionpay`, `visa`, or `unknown`.
+                        Card brand. Can be `amex`, `diners`, `discover`, `eftpos_au`, `jcb`, `link`, `mastercard`, `unionpay`, `visa`, or `unknown`.
                         """
                         brand_product: Optional[str]
                         """
@@ -351,7 +351,7 @@ class ConfirmationToken(APIResource["ConfirmationToken"]):
                         """
                         network: Optional[str]
                         """
-                        Identifies which network this charge was processed on. Can be `amex`, `cartes_bancaires`, `diners`, `discover`, `eftpos_au`, `interac`, `jcb`, `mastercard`, `unionpay`, `visa`, or `unknown`.
+                        Identifies which network this charge was processed on. Can be `amex`, `cartes_bancaires`, `diners`, `discover`, `eftpos_au`, `interac`, `jcb`, `link`, `mastercard`, `unionpay`, `visa`, or `unknown`.
                         """
                         network_transaction_id: Optional[str]
                         """
@@ -630,7 +630,7 @@ class ConfirmationToken(APIResource["ConfirmationToken"]):
 
             brand: str
             """
-            Card brand. Can be `amex`, `diners`, `discover`, `eftpos_au`, `jcb`, `mastercard`, `unionpay`, `visa`, or `unknown`.
+            Card brand. Can be `amex`, `diners`, `discover`, `eftpos_au`, `jcb`, `link`, `mastercard`, `unionpay`, `visa`, or `unknown`.
             """
             checks: Optional[Checks]
             """
@@ -686,6 +686,10 @@ class ConfirmationToken(APIResource["ConfirmationToken"]):
             """
             Contains information about card networks that can be used to process the payment.
             """
+            regulated_status: Optional[Literal["regulated", "unregulated"]]
+            """
+            Status of a card based on the card issuer.
+            """
             three_d_secure_usage: Optional[ThreeDSecureUsage]
             """
             Contains details on how this Card may be used for 3D Secure authentication.
@@ -733,7 +737,7 @@ class ConfirmationToken(APIResource["ConfirmationToken"]):
 
             brand: Optional[str]
             """
-            Card brand. Can be `amex`, `diners`, `discover`, `eftpos_au`, `jcb`, `mastercard`, `unionpay`, `visa`, or `unknown`.
+            Card brand. Can be `amex`, `diners`, `discover`, `eftpos_au`, `jcb`, `link`, `mastercard`, `unionpay`, `visa`, or `unknown`.
             """
             brand_product: Optional[str]
             """
@@ -1151,6 +1155,9 @@ class ConfirmationToken(APIResource["ConfirmationToken"]):
             The customer's bank, if provided.
             """
 
+        class PayByBank(StripeObject):
+            pass
+
         class Payco(StripeObject):
             pass
 
@@ -1158,6 +1165,10 @@ class ConfirmationToken(APIResource["ConfirmationToken"]):
             pass
 
         class Paypal(StripeObject):
+            country: Optional[str]
+            """
+            Two-letter ISO code representing the buyer's country. Values are provided by PayPal directly (if supported) at the time of authorization or settlement. They cannot be set or mutated.
+            """
             payer_email: Optional[str]
             """
             Owner's email. Values are provided by PayPal directly
@@ -1365,6 +1376,7 @@ class ConfirmationToken(APIResource["ConfirmationToken"]):
         naver_pay: Optional[NaverPay]
         oxxo: Optional[Oxxo]
         p24: Optional[P24]
+        pay_by_bank: Optional[PayByBank]
         payco: Optional[Payco]
         paynow: Optional[Paynow]
         paypal: Optional[Paypal]
@@ -1408,6 +1420,7 @@ class ConfirmationToken(APIResource["ConfirmationToken"]):
             "naver_pay",
             "oxxo",
             "p24",
+            "pay_by_bank",
             "payco",
             "paynow",
             "paypal",
@@ -1462,6 +1475,7 @@ class ConfirmationToken(APIResource["ConfirmationToken"]):
             "naver_pay": NaverPay,
             "oxxo": Oxxo,
             "p24": P24,
+            "pay_by_bank": PayByBank,
             "payco": Payco,
             "paynow": Paynow,
             "paypal": Paypal,
@@ -1731,6 +1745,12 @@ class ConfirmationToken(APIResource["ConfirmationToken"]):
         """
         If this is a `p24` PaymentMethod, this hash contains details about the P24 payment method.
         """
+        pay_by_bank: NotRequired[
+            "ConfirmationToken.CreateParamsPaymentMethodDataPayByBank"
+        ]
+        """
+        If this is a `pay_by_bank` PaymentMethod, this hash contains details about the PayByBank payment method.
+        """
         payco: NotRequired[
             "ConfirmationToken.CreateParamsPaymentMethodDataPayco"
         ]
@@ -1830,6 +1850,7 @@ class ConfirmationToken(APIResource["ConfirmationToken"]):
             "naver_pay",
             "oxxo",
             "p24",
+            "pay_by_bank",
             "payco",
             "paynow",
             "paypal",
@@ -2165,6 +2186,9 @@ class ConfirmationToken(APIResource["ConfirmationToken"]):
         """
         The customer's bank.
         """
+
+    class CreateParamsPaymentMethodDataPayByBank(TypedDict):
+        pass
 
     class CreateParamsPaymentMethodDataPayco(TypedDict):
         pass

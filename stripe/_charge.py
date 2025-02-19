@@ -151,6 +151,20 @@ class Charge(
             The predicate to evaluate the payment against.
             """
 
+        advice_code: Optional[
+            Literal["confirm_card_data", "do_not_try_again", "try_again_later"]
+        ]
+        """
+        An enumerated value providing a more detailed explanation on [how to proceed with an error](https://stripe.com/docs/declines#retrying-issuer-declines).
+        """
+        network_advice_code: Optional[str]
+        """
+        For charges declined by the network, a 2 digit code which indicates the advice returned by the network on how to proceed with an error.
+        """
+        network_decline_code: Optional[str]
+        """
+        For charges declined by the network, a brand specific 2, 3, or 4 digit code which indicates the reason the authorization failed.
+        """
         network_status: Optional[str]
         """
         Possible values are `approved_by_network`, `declined_by_network`, `not_sent_to_network`, and `reversed_after_approval`. The value `reversed_after_approval` indicates the payment was [blocked by Stripe](https://stripe.com/docs/declines#blocked-payments) after bank authorization, and may temporarily appear as "pending" on a cardholder's statement.
@@ -286,7 +300,42 @@ class Charge(
             pass
 
         class AmazonPay(StripeObject):
-            pass
+            class Funding(StripeObject):
+                class Card(StripeObject):
+                    brand: Optional[str]
+                    """
+                    Card brand. Can be `amex`, `diners`, `discover`, `eftpos_au`, `jcb`, `link`, `mastercard`, `unionpay`, `visa`, or `unknown`.
+                    """
+                    country: Optional[str]
+                    """
+                    Two-letter ISO code representing the country of the card. You could use this attribute to get a sense of the international breakdown of cards you've collected.
+                    """
+                    exp_month: Optional[int]
+                    """
+                    Two-digit number representing the card's expiration month.
+                    """
+                    exp_year: Optional[int]
+                    """
+                    Four-digit number representing the card's expiration year.
+                    """
+                    funding: Optional[str]
+                    """
+                    Card funding type. Can be `credit`, `debit`, `prepaid`, or `unknown`.
+                    """
+                    last4: Optional[str]
+                    """
+                    The last four digits of the card.
+                    """
+
+                card: Optional[Card]
+                type: Optional[Literal["card"]]
+                """
+                funding type of the underlying payment method.
+                """
+                _inner_class_types = {"card": Card}
+
+            funding: Optional[Funding]
+            _inner_class_types = {"funding": Funding}
 
         class AuBecsDebit(StripeObject):
             bsb_number: Optional[str]
@@ -712,7 +761,7 @@ class Charge(
             """
             brand: Optional[str]
             """
-            Card brand. Can be `amex`, `diners`, `discover`, `eftpos_au`, `jcb`, `mastercard`, `unionpay`, `visa`, or `unknown`.
+            Card brand. Can be `amex`, `diners`, `discover`, `eftpos_au`, `jcb`, `link`, `mastercard`, `unionpay`, `visa`, or `unknown`.
             """
             capture_before: Optional[int]
             """
@@ -779,13 +828,21 @@ class Charge(
             multicapture: Optional[Multicapture]
             network: Optional[str]
             """
-            Identifies which network this charge was processed on. Can be `amex`, `cartes_bancaires`, `diners`, `discover`, `eftpos_au`, `interac`, `jcb`, `mastercard`, `unionpay`, `visa`, or `unknown`.
+            Identifies which network this charge was processed on. Can be `amex`, `cartes_bancaires`, `diners`, `discover`, `eftpos_au`, `interac`, `jcb`, `link`, `mastercard`, `unionpay`, `visa`, or `unknown`.
             """
             network_token: Optional[NetworkToken]
             """
             If this card has network token credentials, this contains the details of the network token credentials.
             """
+            network_transaction_id: Optional[str]
+            """
+            This is used by the financial networks to identify a transaction. Visa calls this the Transaction ID, Mastercard calls this the Trace ID, and American Express calls this the Acquirer Reference Data. The first three digits of the Trace ID is the Financial Network Code, the next 6 digits is the Banknet Reference Number, and the last 4 digits represent the date (MM/DD). This field will be available for successful Visa, Mastercard, or American Express transactions and always null for other card brands.
+            """
             overcapture: Optional[Overcapture]
+            regulated_status: Optional[Literal["regulated", "unregulated"]]
+            """
+            Status of a card based on the card issuer.
+            """
             three_d_secure: Optional[ThreeDSecure]
             """
             Populated if this transaction used 3D Secure authentication.
@@ -871,7 +928,7 @@ class Charge(
             """
             brand: Optional[str]
             """
-            Card brand. Can be `amex`, `diners`, `discover`, `eftpos_au`, `jcb`, `mastercard`, `unionpay`, `visa`, or `unknown`.
+            Card brand. Can be `amex`, `diners`, `discover`, `eftpos_au`, `jcb`, `link`, `mastercard`, `unionpay`, `visa`, or `unknown`.
             """
             brand_product: Optional[str]
             """
@@ -937,7 +994,7 @@ class Charge(
             """
             network: Optional[str]
             """
-            Identifies which network this charge was processed on. Can be `amex`, `cartes_bancaires`, `diners`, `discover`, `eftpos_au`, `interac`, `jcb`, `mastercard`, `unionpay`, `visa`, or `unknown`.
+            Identifies which network this charge was processed on. Can be `amex`, `cartes_bancaires`, `diners`, `discover`, `eftpos_au`, `interac`, `jcb`, `link`, `mastercard`, `unionpay`, `visa`, or `unknown`.
             """
             network_transaction_id: Optional[str]
             """
@@ -1260,7 +1317,7 @@ class Charge(
             """
             network: Optional[str]
             """
-            Identifies which network this charge was processed on. Can be `amex`, `cartes_bancaires`, `diners`, `discover`, `eftpos_au`, `interac`, `jcb`, `mastercard`, `unionpay`, `visa`, or `unknown`.
+            Identifies which network this charge was processed on. Can be `amex`, `cartes_bancaires`, `diners`, `discover`, `eftpos_au`, `interac`, `jcb`, `link`, `mastercard`, `unionpay`, `visa`, or `unknown`.
             """
             network_transaction_id: Optional[str]
             """
@@ -1481,6 +1538,9 @@ class Charge(
             Przelewy24 rarely provides this information so the attribute is usually empty.
             """
 
+        class PayByBank(StripeObject):
+            pass
+
         class Payco(StripeObject):
             buyer_id: Optional[str]
             """
@@ -1508,6 +1568,10 @@ class Charge(
                 Indicates whether the transaction is eligible for PayPal's seller protection.
                 """
 
+            country: Optional[str]
+            """
+            Two-letter ISO code representing the buyer's country. Values are provided by PayPal directly (if supported) at the time of authorization or settlement. They cannot be set or mutated.
+            """
             payer_email: Optional[str]
             """
             Owner's email. Values are provided by PayPal directly
@@ -1545,7 +1609,42 @@ class Charge(
             """
 
         class RevolutPay(StripeObject):
-            pass
+            class Funding(StripeObject):
+                class Card(StripeObject):
+                    brand: Optional[str]
+                    """
+                    Card brand. Can be `amex`, `diners`, `discover`, `eftpos_au`, `jcb`, `link`, `mastercard`, `unionpay`, `visa`, or `unknown`.
+                    """
+                    country: Optional[str]
+                    """
+                    Two-letter ISO code representing the country of the card. You could use this attribute to get a sense of the international breakdown of cards you've collected.
+                    """
+                    exp_month: Optional[int]
+                    """
+                    Two-digit number representing the card's expiration month.
+                    """
+                    exp_year: Optional[int]
+                    """
+                    Four-digit number representing the card's expiration year.
+                    """
+                    funding: Optional[str]
+                    """
+                    Card funding type. Can be `credit`, `debit`, `prepaid`, or `unknown`.
+                    """
+                    last4: Optional[str]
+                    """
+                    The last four digits of the card.
+                    """
+
+                card: Optional[Card]
+                type: Optional[Literal["card"]]
+                """
+                funding type of the underlying payment method.
+                """
+                _inner_class_types = {"card": Card}
+
+            funding: Optional[Funding]
+            _inner_class_types = {"funding": Funding}
 
         class SamsungPay(StripeObject):
             buyer_id: Optional[str]
@@ -1738,6 +1837,7 @@ class Charge(
         naver_pay: Optional[NaverPay]
         oxxo: Optional[Oxxo]
         p24: Optional[P24]
+        pay_by_bank: Optional[PayByBank]
         payco: Optional[Payco]
         paynow: Optional[Paynow]
         paypal: Optional[Paypal]
@@ -1795,6 +1895,7 @@ class Charge(
             "naver_pay": NaverPay,
             "oxxo": Oxxo,
             "p24": P24,
+            "pay_by_bank": PayByBank,
             "payco": Payco,
             "paynow": Paynow,
             "paypal": Paypal,

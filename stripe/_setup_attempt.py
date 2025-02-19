@@ -177,7 +177,7 @@ class SetupAttempt(ListableAPIResource["SetupAttempt"]):
 
             brand: Optional[str]
             """
-            Card brand. Can be `amex`, `diners`, `discover`, `eftpos_au`, `jcb`, `mastercard`, `unionpay`, `visa`, or `unknown`.
+            Card brand. Can be `amex`, `diners`, `discover`, `eftpos_au`, `jcb`, `link`, `mastercard`, `unionpay`, `visa`, or `unknown`.
             """
             checks: Optional[Checks]
             """
@@ -223,7 +223,7 @@ class SetupAttempt(ListableAPIResource["SetupAttempt"]):
             """
             network: Optional[str]
             """
-            Identifies which network this charge was processed on. Can be `amex`, `cartes_bancaires`, `diners`, `discover`, `eftpos_au`, `interac`, `jcb`, `mastercard`, `unionpay`, `visa`, or `unknown`.
+            Identifies which network this charge was processed on. Can be `amex`, `cartes_bancaires`, `diners`, `discover`, `eftpos_au`, `interac`, `jcb`, `link`, `mastercard`, `unionpay`, `visa`, or `unknown`.
             """
             three_d_secure: Optional[ThreeDSecure]
             """
@@ -435,6 +435,10 @@ class SetupAttempt(ListableAPIResource["SetupAttempt"]):
         }
 
     class SetupError(StripeObject):
+        advice_code: Optional[str]
+        """
+        For card errors resulting from a card issuer decline, a short string indicating [how to proceed with an error](https://stripe.com/docs/declines#retrying-issuer-declines) if they provide one.
+        """
         charge: Optional[str]
         """
         For card errors, the ID of the failed charge.
@@ -629,6 +633,14 @@ class SetupAttempt(ListableAPIResource["SetupAttempt"]):
         message: Optional[str]
         """
         A human-readable message providing more details about the error. For card errors, these messages can be shown to your users.
+        """
+        network_advice_code: Optional[str]
+        """
+        For card errors resulting from a card issuer decline, a 2 digit code which indicates the advice given to merchant by the card network on how to proceed with an error.
+        """
+        network_decline_code: Optional[str]
+        """
+        For card errors resulting from a card issuer decline, a brand specific 2, 3, or 4 digit code which indicates the reason the authorization failed.
         """
         param: Optional[str]
         """

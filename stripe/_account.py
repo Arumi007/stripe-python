@@ -316,6 +316,12 @@ class Account(
         """
         The status of the P24 payments capability of the account, or whether the account can directly process P24 charges.
         """
+        pay_by_bank_payments: Optional[
+            Literal["active", "inactive", "pending"]
+        ]
+        """
+        The status of the pay_by_bank payments capability of the account, or whether the account can directly process pay_by_bank charges.
+        """
         payco_payments: Optional[Literal["active", "inactive", "pending"]]
         """
         The status of the Payco capability of the account, or whether the account can directly process Payco payments.
@@ -486,6 +492,20 @@ class Account(
             Town/cho-me.
             """
 
+        class DirectorshipDeclaration(StripeObject):
+            date: Optional[int]
+            """
+            The Unix timestamp marking when the directorship declaration attestation was made.
+            """
+            ip: Optional[str]
+            """
+            The IP address from which the directorship declaration attestation was made.
+            """
+            user_agent: Optional[str]
+            """
+            The user-agent string from the browser where the directorship declaration attestation was made.
+            """
+
         class OwnershipDeclaration(StripeObject):
             date: Optional[int]
             """
@@ -535,6 +555,10 @@ class Account(
         """
         Whether the company's directors have been provided. This Boolean will be `true` if you've manually indicated that all directors are provided via [the `directors_provided` parameter](https://stripe.com/docs/api/accounts/update#update_account-company-directors_provided).
         """
+        directorship_declaration: Optional[DirectorshipDeclaration]
+        """
+        This hash is used to attest that the director information provided to Stripe is both current and correct.
+        """
         executives_provided: Optional[bool]
         """
         Whether the company's executives have been provided. This Boolean will be `true` if you've manually indicated that all executives are provided via [the `executives_provided` parameter](https://stripe.com/docs/api/accounts/update#update_account-company-executives_provided), or if Stripe determined that sufficient executives were provided.
@@ -567,6 +591,12 @@ class Account(
         """
         This hash is used to attest that the beneficial owner information provided to Stripe is both current and correct.
         """
+        ownership_exemption_reason: Optional[
+            Literal[
+                "qualified_entity_exceeds_ownership_threshold",
+                "qualifies_as_financial_institution",
+            ]
+        ]
         phone: Optional[str]
         """
         The company's phone number (used for verification).
@@ -621,6 +651,7 @@ class Account(
             "address": Address,
             "address_kana": AddressKana,
             "address_kanji": AddressKanji,
+            "directorship_declaration": DirectorshipDeclaration,
             "ownership_declaration": OwnershipDeclaration,
             "verification": Verification,
         }
@@ -792,15 +823,33 @@ class Account(
         """
         current_deadline: Optional[int]
         """
-        Date on which `future_requirements` merges with the main `requirements` hash and `future_requirements` becomes empty. After the transition, `currently_due` requirements may immediately become `past_due`, but the account may also be given a grace period depending on its enablement state prior to transitioning.
+        Date on which `future_requirements` becomes the main `requirements` hash and `future_requirements` becomes empty. After the transition, `currently_due` requirements may immediately become `past_due`, but the account may also be given a grace period depending on its enablement state prior to transitioning.
         """
         currently_due: Optional[List[str]]
         """
         Fields that need to be collected to keep the account enabled. If not collected by `future_requirements[current_deadline]`, these fields will transition to the main `requirements` hash.
         """
-        disabled_reason: Optional[str]
+        disabled_reason: Optional[
+            Literal[
+                "action_required.requested_capabilities",
+                "listed",
+                "other",
+                "platform_paused",
+                "rejected.fraud",
+                "rejected.incomplete_verification",
+                "rejected.listed",
+                "rejected.other",
+                "rejected.platform_fraud",
+                "rejected.platform_other",
+                "rejected.platform_terms_of_service",
+                "rejected.terms_of_service",
+                "requirements.past_due",
+                "requirements.pending_verification",
+                "under_review",
+            ]
+        ]
         """
-        This is typed as a string for consistency with `requirements.disabled_reason`.
+        This is typed as an enum for consistency with `requirements.disabled_reason`.
         """
         errors: Optional[List[Error]]
         """
@@ -808,7 +857,7 @@ class Account(
         """
         eventually_due: Optional[List[str]]
         """
-        Fields that need to be collected assuming all volume thresholds are reached. As they become required, they appear in `currently_due` as well.
+        Fields you must collect when all thresholds are reached. As they become required, they appear in `currently_due` as well.
         """
         past_due: Optional[List[str]]
         """
@@ -954,9 +1003,27 @@ class Account(
         """
         Fields that need to be collected to keep the account enabled. If not collected by `current_deadline`, these fields appear in `past_due` as well, and the account is disabled.
         """
-        disabled_reason: Optional[str]
+        disabled_reason: Optional[
+            Literal[
+                "action_required.requested_capabilities",
+                "listed",
+                "other",
+                "platform_paused",
+                "rejected.fraud",
+                "rejected.incomplete_verification",
+                "rejected.listed",
+                "rejected.other",
+                "rejected.platform_fraud",
+                "rejected.platform_other",
+                "rejected.platform_terms_of_service",
+                "rejected.terms_of_service",
+                "requirements.past_due",
+                "requirements.pending_verification",
+                "under_review",
+            ]
+        ]
         """
-        If the account is disabled, this string describes why. [Learn more about handling verification issues](https://stripe.com/docs/connect/handling-api-verification). Can be `action_required.requested_capabilities`, `requirements.past_due`, `requirements.pending_verification`, `listed`, `platform_paused`, `rejected.fraud`, `rejected.incomplete_verification`, `rejected.listed`, `rejected.other`, `rejected.terms_of_service`, `under_review`, or `other`.
+        If the account is disabled, this enum describes why. [Learn more about handling verification issues](https://stripe.com/docs/connect/handling-api-verification).
         """
         errors: Optional[List[Error]]
         """
@@ -964,7 +1031,7 @@ class Account(
         """
         eventually_due: Optional[List[str]]
         """
-        Fields that need to be collected assuming all volume thresholds are reached. As they become required, they appear in `currently_due` as well, and `current_deadline` becomes set.
+        Fields you must collect when all thresholds are reached. As they become required, they appear in `currently_due` as well, and `current_deadline` becomes set.
         """
         past_due: Optional[List[str]]
         """
@@ -1326,7 +1393,7 @@ class Account(
         """
         groups: NotRequired["Account.CreateParamsGroups"]
         """
-        A hash of account group type to tokens. These are account groups this account should be added to
+        A hash of account group type to tokens. These are account groups this account should be added to.
         """
         individual: NotRequired["Account.CreateParamsIndividual"]
         """
@@ -1695,6 +1762,12 @@ class Account(
         """
         The p24_payments capability.
         """
+        pay_by_bank_payments: NotRequired[
+            "Account.CreateParamsCapabilitiesPayByBankPayments"
+        ]
+        """
+        The pay_by_bank_payments capability.
+        """
         payco_payments: NotRequired[
             "Account.CreateParamsCapabilitiesPaycoPayments"
         ]
@@ -2010,6 +2083,12 @@ class Account(
         Passing true requests the capability for the account, if it is not already requested. A requested capability may not immediately become active. Any requirements to activate the capability are returned in the `requirements` arrays.
         """
 
+    class CreateParamsCapabilitiesPayByBankPayments(TypedDict):
+        requested: NotRequired[bool]
+        """
+        Passing true requests the capability for the account, if it is not already requested. A requested capability may not immediately become active. Any requirements to activate the capability are returned in the `requirements` arrays.
+        """
+
     class CreateParamsCapabilitiesPaycoPayments(TypedDict):
         requested: NotRequired[bool]
         """
@@ -2154,6 +2233,12 @@ class Account(
         """
         Whether the company's directors have been provided. Set this Boolean to `true` after creating all the company's directors with [the Persons API](https://stripe.com/api/persons) for accounts with a `relationship.director` requirement. This value is not automatically set to `true` after creating directors, so it needs to be updated to indicate all directors have been provided.
         """
+        directorship_declaration: NotRequired[
+            "Account.CreateParamsCompanyDirectorshipDeclaration"
+        ]
+        """
+        This hash is used to attest that the directors information provided to Stripe is both current and correct.
+        """
         executives_provided: NotRequired[bool]
         """
         Whether the company's executives have been provided. Set this Boolean to `true` after creating all the company's executives with [the Persons API](https://stripe.com/api/persons) for accounts with a `relationship.executive` requirement.
@@ -2188,6 +2273,9 @@ class Account(
         """
         This hash is used to attest that the beneficial owner information provided to Stripe is both current and correct.
         """
+        ownership_exemption_reason: NotRequired[
+            "Literal['']|Literal['qualified_entity_exceeds_ownership_threshold', 'qualifies_as_financial_institution']"
+        ]
         phone: NotRequired[str]
         """
         The company's phone number (used for verification).
@@ -2305,6 +2393,20 @@ class Account(
         Town or cho-me.
         """
 
+    class CreateParamsCompanyDirectorshipDeclaration(TypedDict):
+        date: NotRequired[int]
+        """
+        The Unix timestamp marking when the directorship declaration attestation was made.
+        """
+        ip: NotRequired[str]
+        """
+        The IP address from which the directorship declaration attestation was made.
+        """
+        user_agent: NotRequired[str]
+        """
+        The user agent of the browser from which the directorship declaration attestation was made.
+        """
+
     class CreateParamsCompanyOwnershipDeclaration(TypedDict):
         date: NotRequired[int]
         """
@@ -2418,6 +2520,12 @@ class Account(
         """
         One or more documents showing the company's proof of registration with the national business registry.
         """
+        proof_of_ultimate_beneficial_ownership: NotRequired[
+            "Account.CreateParamsDocumentsProofOfUltimateBeneficialOwnership"
+        ]
+        """
+        One or more documents that demonstrate proof of ultimate beneficial ownership.
+        """
 
     class CreateParamsDocumentsBankAccountOwnershipVerification(TypedDict):
         files: NotRequired[List[str]]
@@ -2456,6 +2564,12 @@ class Account(
         """
 
     class CreateParamsDocumentsProofOfRegistration(TypedDict):
+        files: NotRequired[List[str]]
+        """
+        One or more document ids returned by a [file upload](https://stripe.com/docs/api#create_file) with a `purpose` value of `account_requirement`.
+        """
+
+    class CreateParamsDocumentsProofOfUltimateBeneficialOwnership(TypedDict):
         files: NotRequired[List[str]]
         """
         One or more document ids returned by a [file upload](https://stripe.com/docs/api#create_file) with a `purpose` value of `account_requirement`.
@@ -3252,6 +3366,10 @@ class Account(
         """
 
     class CreatePersonParamsRelationship(TypedDict):
+        authorizer: NotRequired[bool]
+        """
+        Whether the person is the authorizer of the account's representative.
+        """
         director: NotRequired[bool]
         """
         Whether the person is a director of the account's legal entity. Directors are typically members of the governing board of the company, or responsible for ensuring the company meets its regulatory obligations.
@@ -3413,6 +3531,10 @@ class Account(
         """
 
     class ListPersonsParamsRelationship(TypedDict):
+        authorizer: NotRequired[bool]
+        """
+        A filter on the list of people returned based on whether these people are authorizers of the account's representative.
+        """
         director: NotRequired[bool]
         """
         A filter on the list of people returned based on whether these people are directors of the account's company.
@@ -3833,6 +3955,10 @@ class Account(
         """
 
     class ModifyPersonParamsRelationship(TypedDict):
+        authorizer: NotRequired[bool]
+        """
+        Whether the person is the authorizer of the account's representative.
+        """
         director: NotRequired[bool]
         """
         Whether the person is a director of the account's legal entity. Directors are typically members of the governing board of the company, or responsible for ensuring the company meets its regulatory obligations.
@@ -3917,6 +4043,10 @@ class Account(
         """
 
     class PersonsParamsRelationship(TypedDict):
+        authorizer: NotRequired[bool]
+        """
+        A filter on the list of people returned based on whether these people are authorizers of the account's representative.
+        """
         director: NotRequired[bool]
         """
         A filter on the list of people returned based on whether these people are directors of the account's company.
